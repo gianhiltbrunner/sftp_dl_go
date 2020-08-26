@@ -71,27 +71,30 @@ func main() {
 
 			fmt.Println("===" + targetFile + "===")
 
-			srcFile, err := sftp.Open(targetFile)
-			if err != nil {
-				log.Fatal(err)
-			}
+			go func() {
+				srcFile, err := sftp.Open(targetFile)
+				if err != nil {
+					log.Fatal(err)
+				}
 
-			dstFile, err := os.Create("./" + targetName)
-			if err != nil {
-				log.Fatal(err)
-			}
-			defer dstFile.Close()
+				dstFile, err := os.Create("./" + targetName)
+				if err != nil {
+					log.Fatal(err)
+				}
+				defer dstFile.Close()
 
-			bytes, err := io.Copy(dstFile, srcFile)
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Printf("%d bytes copied\n", bytes)
+				bytes, err := io.Copy(dstFile, srcFile)
+				if err != nil {
+					log.Fatal(err)
+				}
+				fmt.Printf("%d bytes copied\n", bytes)
 
-			err = dstFile.Sync()
-			if err != nil {
-				log.Fatal(err)
-			}
+				err = dstFile.Sync()
+				if err != nil {
+					log.Fatal(err)
+				}
+			}()
+
 			currentDir = oldDir
 
 		} else {
