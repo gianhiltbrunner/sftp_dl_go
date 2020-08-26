@@ -58,6 +58,7 @@ func main() {
 
 	//os.Chdir("/")
 	var currentDir = "/"
+	var oldDir = "" //Dir before download
 
 	for {
 		dirRead, err := sftp.ReadDir(currentDir)
@@ -68,7 +69,7 @@ func main() {
 			pathSlice := strings.Split(targetFile, "/")
 			targetName := pathSlice[len(pathSlice)-1]
 
-			fmt.Println("-> DL " + targetFile)
+			fmt.Println("===" + targetFile + "===")
 
 			srcFile, err := sftp.Open(targetFile)
 			if err != nil {
@@ -91,8 +92,10 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
+			currentDir = oldDir
+
 		} else {
-			fmt.Println("-> SELECT " + currentDir)
+			fmt.Println("---" + currentDir + "---")
 		}
 
 		for _, element := range dirRead {
@@ -109,8 +112,12 @@ func main() {
 			log.Fatal(err)
 		}
 
-		if len(globMatches) > 0 {
-			currentDir = globMatches[0] //Handle no matches
+		oldDir = currentDir
+		if pattern == ".." {
+			splitPattern := strings.Split(currentDir, "/")
+			currentDir = strings.Join(splitPattern[:len(splitPattern)-2], "/") + "/"
+		} else if len(globMatches) > 0 && pattern != "" {
+			currentDir = globMatches[0]
 			currentDir = currentDir + "/"
 		} else {
 			fmt.Println("No match found!")
